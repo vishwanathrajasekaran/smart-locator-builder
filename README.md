@@ -14,5 +14,30 @@ Static app. No build step, no API keys, no running costs. Screenshot reading use
 ## Notes
 - robots.txt and sitemap.xml are served by the gateway, not here.
 - canonical and og: tags already point to the tools.vishwanathrajasekaran.in address.
-- Content-Security-Policy is report-only. After deploy, check the browser console, then rename the header to Content-Security-Policy.
-- The Pro gate is client-side and demo only. Add real checkout and server-verified keys before charging.
+- Content-Security-Policy is enforced in `vercel.json` and allows the inline static app, local OCR worker, blob workers and WASM runtime required by Tesseract.js.
+- The Pro gate is client-side and demo only. It is not payment or access control; add real checkout and server verification before charging.
+
+## Local-only enhancements
+
+The tool does not require MCP. Analysis, scoring, Playwright semantic locator suggestions, stability comparison, local project save/load, JSON project import/export, OCR and locator exports all run in the browser.
+
+- Phase 1 reliability: stale-state clearing, async cancellation guards, input limits, safe XPath previews, validated local preferences, safe variable names and CSV formula-injection protection.
+- Phase 2 locator quality: `getByRole`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByText` and `getByAltText` suggestions, accessibility-aware ranking, duplicate detection, and cross-snapshot match checks.
+- Saved projects use browser storage only. They are not synced between browsers or users.
+- The Capture helper generates a bookmarklet that copies the current page DOM to the clipboard. This is a user-triggered bridge for live pages; it is not automatic browser control and does not require MCP.
+
+## Checks
+
+Run the dependency-free static smoke test from this directory:
+
+```bash
+node tests/smoke.js
+```
+
+For behavior checks, serve the directory with Python's standard server and use a browser:
+
+```bash
+python -m http.server 4173
+```
+
+Then open `http://127.0.0.1:4173/`, load the sample, test custom XPath/CSS, switch frameworks, save and reload a project, compare a second snapshot, and inspect the Console and Network panels. Browser-level behavior remains a manual check because this static project has no test runner or DOM dependency.
