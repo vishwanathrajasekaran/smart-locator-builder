@@ -12,6 +12,7 @@
   const capturePageButton = document.getElementById('capture-page');
   const pickElementButton = document.getElementById('pick-element');
   const copyJsonButton = document.getElementById('copy-json');
+  const copyElementJsonButton = document.getElementById('copy-element-json');
   const openBuilderButton = document.getElementById('open-builder');
 
   let saveTimer = null;
@@ -137,19 +138,25 @@
     if (status && status.ok === false) {
       lastCaptureStatus.textContent = status.message || 'The last capture failed.';
       lastCaptureStatus.className = 'status-text error';
+      copyElementJsonButton.disabled = true;
       return;
     }
 
     if (!capture) {
       lastCaptureStatus.textContent = 'No capture yet.';
       lastCaptureStatus.className = 'status-text';
+      copyElementJsonButton.disabled = true;
       return;
     }
 
     const size = status && status.sizeBytes ? status.sizeBytes : captureSizeBytes(capture);
     const time = formatTime(capture.capturedAt);
-    lastCaptureStatus.textContent = `Ready${time ? ` at ${time}` : ''} · ${formatBytes(size)}`;
+    const selected = capture.selected && capture.selected.tagName
+      ? ` · selected ${capture.selected.tagName.toLowerCase()}`
+      : '';
+    lastCaptureStatus.textContent = `Ready${time ? ` at ${time}` : ''} · ${formatBytes(size)}${selected}`;
     lastCaptureStatus.className = 'status-text';
+    copyElementJsonButton.disabled = !(capture.selected && capture.selected.outerHTML);
   }
 
   function applyState(state) {
@@ -230,6 +237,52 @@
     }
   }
 
+  function buildElementCapture(capture) {
+    if (!capture || !capture.selected || !capture.selected.outerHTML) {
+      throw new Error('Pick a target element before copying element JSON.');
+    }
+    return {
+      type: 'smart-locator-element-capture',
+      version: 1,
+      capturedAt: capture.capturedAt,
+      url: capture.url,
+      title: capture.title,
+      element: capture.selected
+    };
+  }
+
+  async function copyElementJson() {
+    setActionStatus('Preparing element JSON…');
+    copyElementJsonButton.disabled = true;
+    try {
+      const state = await sendMessage({ type: 'SLB_GET_STATE' });
+      const elementCapture = buildElementCapture(state && state.lastCapture);
+      const json = JSON.stringify(elementCapture, null, 2);
+      try {
+        await navigator.clipboard.writeText(json);
+      } catch (_clipboardError) {
+        const fallback = document.createElement('textarea');
+        fallback.value = json;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'fixed';
+        fallback.style.left = '-9999px';
+        document.body.appendChild(fallback);
+        fallback.select();
+        const copied = document.execCommand('copy');
+        fallback.remove();
+        if (!copied) {
+          throw new Error('Clipboard access was denied.');
+        }
+      }
+      setActionStatus('Element-only JSON copied to the clipboard.', 'success');
+    } catch (error) {
+      setActionStatus(error.message, 'error');
+      copyElementJsonButton.disabled = false;
+      return;
+    }
+    copyElementJsonButton.disabled = false;
+  }
+
   async function openBuilder() {
     setActionStatus('Opening Builder…');
     openBuilderButton.disabled = true;
@@ -273,6 +326,10 @@
 
   copyJsonButton.addEventListener('click', () => {
     void copyJson();
+  });
+
+  copyElementJsonButton.addEventListener('click', () => {
+    void copyElementJson();
   });
 
   openBuilderButton.addEventListener('click', () => {

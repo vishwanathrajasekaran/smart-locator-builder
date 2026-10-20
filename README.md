@@ -25,7 +25,7 @@ The tool does not require MCP. Analysis, scoring, Playwright semantic locator su
 - Phase 2 locator quality: `getByRole`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByText` and `getByAltText` suggestions, accessibility-aware ranking, duplicate detection, and cross-snapshot match checks.
 - Saved projects use browser storage only. They are not synced between browsers or users.
 - The Capture helper generates a bookmarklet that copies the current page DOM to the clipboard. This is a user-triggered bridge for live pages; it is not automatic browser control and does not require MCP.
-- A no-build Chrome/Edge Manifest V3 extension is available in `browser-extension/`. It can capture the current page, pick an element, copy the capture JSON, or deliver a capture into the Builder through an exact-origin handshake. See `browser-extension/README.md` for installation and permissions.
+- A no-build Chrome/Edge Manifest V3 extension is available in `browser-extension/`. It can capture the current page, pick a target element, copy either the full-page JSON or a separate element-only JSON object, or deliver a full-context capture into the Builder through an exact-origin handshake. See `browser-extension/README.md` for installation and permissions.
 
 ## Checks
 

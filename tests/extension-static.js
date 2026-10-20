@@ -18,7 +18,7 @@ for (const file of ['popup.html', 'popup.css', 'popup.js', 'content.js', 'servic
 
 const popup = fs.readFileSync(path.join(root, 'popup.html'), 'utf8');
 if (/<script\s*>/i.test(popup)) throw new Error('Popup contains inline script');
-for (const id of ['capture-page', 'pick-element', 'copy-json', 'open-builder', 'builder-url']) {
+for (const id of ['capture-page', 'pick-element', 'copy-json', 'copy-element-json', 'open-builder', 'builder-url']) {
   if (!new RegExp(`id="${id}"`).test(popup)) throw new Error(`Popup control missing: #${id}`);
 }
 
@@ -45,5 +45,8 @@ for (const marker of [
 if (!content.includes('DELIVERY_ACK_TIMEOUT_MS')) throw new Error('Builder delivery timeout is missing');
 if (!worker.includes('lastCapture: null')) throw new Error('Failed captures must clear stale captures');
 if (!app.includes('capjsonb')) throw new Error('Builder capture JSON import control is missing');
+if (!fs.readFileSync(path.join(root, 'popup.js'), 'utf8').includes('smart-locator-element-capture')) {
+  throw new Error('Element-only copy protocol is missing');
+}
 
 console.log('Extension static checks passed');

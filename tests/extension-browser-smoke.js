@@ -68,8 +68,30 @@ async function main() {
     if (!target) throw new Error('The picker target is not visible.');
     await source.mouse.move(target.x + target.width / 2, target.y + target.height / 2);
     await source.mouse.click(target.x + target.width / 2, target.y + target.height / 2);
+    const pickerStatus = await popup.locator('#last-capture-status').innerText();
+    if (!pickerStatus.includes('selected button')) throw new Error(`The popup did not report the picked element: ${pickerStatus}`);
     const selectedCapture = await worker.evaluate(async () => (await chrome.storage.local.get('lastCapture')).lastCapture);
     if (!selectedCapture?.selected) throw new Error('The selected element was not stored.');
+    await popup.evaluate(() => {
+      window.__slbClipboard = '';
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (value) => { window.__slbClipboard = value; },
+          readText: async () => window.__slbClipboard
+        }
+      });
+    });
+    await popup.locator('#copy-element-json').click();
+    await popup.waitForFunction(
+      () => document.querySelector('#action-status')?.textContent.includes('Element-only JSON copied'),
+      null,
+      { timeout: 15000 }
+    );
+    const elementJson = JSON.parse(await popup.evaluate(() => window.__slbClipboard));
+    if (elementJson.type !== 'smart-locator-element-capture' || elementJson.element.tagName !== 'BUTTON' || elementJson.element.outerHTML.includes('<html')) {
+      throw new Error('Element-only JSON did not contain only the picked element.');
+    }
 
     await source.bringToFront();
     const builderPromise = context.waitForEvent('page');
@@ -88,6 +110,8 @@ async function main() {
       browser: path.basename(browserPath),
       capture: 'passed',
       picker: selectedCapture.selected.tagName,
+      pickerStatus,
+      elementJson: 'passed',
       delivery: 'acknowledged',
       inventory: await builder.locator('.it').count(),
       errors: errors.length

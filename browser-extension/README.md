@@ -20,9 +20,9 @@ This is a no-build Chrome/Edge Manifest V3 extension for taking a user-triggered
 
 1. Navigate to an `http://` or `https://` page.
 2. Open the extension popup. The current page title and URL are shown at the top.
-3. Choose **Capture page** for the full document, or **Pick element** and click an element on the page. The picker highlights the element and allows normal page scrolling; press **Escape** to cancel it.
-4. Use **Copy JSON** to copy the latest capture to the clipboard.
-5. Set **Builder URL** if needed, then choose **Open in Builder**. The default is `https://tools.vishwanathrajasekaran.in/smart-locator/`; local URLs such as `http://127.0.0.1:3000/` are accepted.
+3. Choose **Capture page** for the full document, or **Pick target element** and click an element on the page. The picker highlights the element and allows normal page scrolling; press **Escape** to cancel it. The extension popup normally closes while you pick; reopen it after selecting.
+4. Use **Copy full-page JSON** for the complete DOM capture. After a successful pick, **Copy element JSON** becomes enabled and copies a separate element-only JSON object.
+5. Set **Builder URL** if needed, then choose **Open in Builder**. The default is `https://tools.vishwanathrajasekaran.in/smart-locator/`; local URLs such as `http://127.0.0.1:3000/` are accepted. Builder delivery uses the full-page capture so locator uniqueness can be checked in context.
 6. If you already downloaded a capture, use the Builder's **Import capture JSON** button to load it without the extension.
 
 The serialized capture is limited to about 2 MB. If it is larger, the extension records a clear error instead of silently dropping it. **Pick element** adds the selected element metadata, but the current protocol still includes the full document so the Builder can validate locator uniqueness in context; it does not bypass the full-document size limit.
@@ -35,7 +35,7 @@ The serialized capture is limited to about 2 MB. If it is larger, the extension 
 - `clipboardWrite`: lets **Copy JSON** write the capture to the system clipboard.
 - `http://*/*` and `https://*/*` host permissions: allow the content script to receive user-triggered capture commands on ordinary HTTP(S) pages and to relay a capture into a configured Builder URL. Browser-internal pages such as `chrome://` and `edge://` are not targeted.
 
-The extension has no external libraries and makes no network requests or uploads. Captures stay in local extension storage until the user copies or opens them. **Open in Builder** only navigates the browser to the configured URL and passes the existing capture to that page through an exact-origin `window.postMessage` handshake; it does not put the capture in the URL or send it to a server. The Builder confirms the import before the extension reports delivery success. This is a user-triggered DOM snapshot, not live browser automation.
+The extension has no external libraries and makes no network requests or uploads. Captures stay in local extension storage until the user copies or opens them. **Copy full-page JSON** copies the complete capture. **Copy element JSON** creates a separate `smart-locator-element-capture` object containing only the selected element metadata. **Open in Builder** navigates to the configured URL and passes the full-page capture through an exact-origin `window.postMessage` handshake; it does not put the capture in the URL or send it to a server. The Builder confirms the import before the extension reports delivery success. This is a user-triggered DOM snapshot, not live browser automation.
 
 ## Message protocol
 
@@ -55,7 +55,27 @@ The content script sends these messages to the service worker:
 - `SLB_CAPTURE_ERROR` with `{ message, sizeBytes? }` when capture serialization or the size guard fails.
 - `SLB_PICKER_CANCELLED` when the user presses Escape.
 
-The capture command response is not reported as successful until the extension has stored the capture. A failed or cancelled operation clears the previously stored capture so **Copy JSON** and **Open in Builder** cannot accidentally reuse stale data.
+The capture command response is not reported as successful until the extension has stored the capture. A failed or cancelled operation clears the previously stored capture so **Copy full-page JSON**, **Copy element JSON**, and **Open in Builder** cannot accidentally reuse stale data.
+
+### Element-only copy object
+
+After the picker selects an element, **Copy element JSON** produces a separate object like:
+
+```json
+{
+  "type": "smart-locator-element-capture",
+  "version": 1,
+  "capturedAt": "2026-01-01T00:00:00.000Z",
+  "url": "https://example.com/page",
+  "title": "Example page",
+  "element": {
+    "tagName": "BUTTON",
+    "outerHTML": "<button data-testid=\"save\">Save</button>",
+    "path": [0, 1, 0, 2],
+    "attributes": [{ "name": "data-testid", "value": "save" }]
+  }
+}
+```
 
 ### Capture object
 
