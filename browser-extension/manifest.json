@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Smart Locator Builder",
+  "version": "1.0.0",
+  "description": "Capture a user-triggered DOM snapshot for Smart Locator Builder. Permission rationale is documented in the included README.",
+  "action": {
+    "default_title": "Smart Locator Builder",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Smart Locator Builder</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="popup-header">
+        <p class="eyebrow">Smart Locator Builder</p>
+        <h1>Capture a locator</h1>
+        <p class="subtitle">Take a user-triggered DOM snapshot from the current page.</p>
+      </header>
+
+      <section class="card page-card" aria-labelledby="current-page-heading">
+        <h2 id="current-page-heading">Current page</h2>
+        <dl class="page-details">
+          <div class="detail-row">
+            <dt>Title</dt>
+            <dd id="current-page-title">Loading…</dd>
+          </div>
+          <div class="detail-row">
+            <dt>URL</dt>
+            <dd id="current-page-url" class="url-value">Loading…</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="builder-heading">
+        <h2 id="builder-heading">Builder destination</h2>
+        <label class="field-label" for="builder-url">Builder URL</label>
+        <input
+          id="builder-url"
+          class="text-input"
+          type="url"
+          inputmode="url"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="https://tools.vishwanathrajasekaran.in/smart-locator/"
+        >
+        <p id="builder-url-status" class="field-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="actions" aria-label="Capture actions">
+        <button id="capture-page" class="button button-primary" type="button">Capture page</button>
+        <button id="pick-element" class="button button-secondary" type="button">Pick element</button>
+        <button id="copy-json" class="button button-secondary" type="button">Copy JSON</button>
+        <button id="open-builder" class="button button-secondary" type="button">Open in Builder</button>
+      </section>
+
+      <section class="card status-card" aria-labelledby="last-capture-heading">
+        <h2 id="last-capture-heading">Last capture</h2>
+        <p id="last-capture-status" class="status-text" role="status" aria-live="polite">No capture yet.</p>
+        <p id="action-status" class="action-status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -11,8 +11,8 @@ scripts.forEach(([, code], index) => {
 });
 
 const requiredIds = [
-  'fw', 'pjb', 'capb', 'th', 'pro', 'src', 'an', 'smp', 'rs', 'upb', 'shb',
-  'up', 'shot', 'shs', 'inv', 'det', 'm', 'mb', 'toast', 'yr'
+  'fw', 'pjb', 'capb', 'th', 'pro', 'src', 'an', 'smp', 'rs', 'upb', 'shb', 'capjsonb',
+  'up', 'shot', 'capjson', 'shs', 'exts', 'inv', 'det', 'm', 'mb', 'toast', 'yr'
 ];
 for (const id of requiredIds) {
   if (!new RegExp(`id="${id}"`).test(html)) throw new Error(`Missing #${id}`);
@@ -20,7 +20,7 @@ for (const id of requiredIds) {
 
 const features = [
   'getByRole', 'getByLabel', 'getByPlaceholder', 'getByTestId',
-  'Snapshot stability', 'Local projects', 'CAPTURE_BOOKMARKLET', 'MAX_HTML', 'nodePreview'
+  'Snapshot stability', 'Local projects', 'CAPTURE_BOOKMARKLET', 'SMART_LOCATOR_CAPTURE', 'MAX_CAPTURE_BYTES', 'MAX_HTML', 'nodePreview'
 ];
 for (const feature of features) {
   if (!html.includes(feature)) throw new Error(`Missing feature marker: ${feature}`);

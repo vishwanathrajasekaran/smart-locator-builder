@@ -25,6 +25,7 @@ The tool does not require MCP. Analysis, scoring, Playwright semantic locator su
 - Phase 2 locator quality: `getByRole`, `getByLabel`, `getByPlaceholder`, `getByTestId`, `getByText` and `getByAltText` suggestions, accessibility-aware ranking, duplicate detection, and cross-snapshot match checks.
 - Saved projects use browser storage only. They are not synced between browsers or users.
 - The Capture helper generates a bookmarklet that copies the current page DOM to the clipboard. This is a user-triggered bridge for live pages; it is not automatic browser control and does not require MCP.
+- A no-build Chrome/Edge Manifest V3 extension is available in `browser-extension/`. It can capture the current page, pick an element, copy the capture JSON, or deliver a capture into the Builder through an exact-origin handshake. See `browser-extension/README.md` for installation and permissions.
 
 ## Checks
 
@@ -34,10 +35,26 @@ Run the dependency-free static smoke test from this directory:
 node tests/smoke.js
 ```
 
+Run the extension static checks:
+
+```bash
+node tests/extension-static.js
+```
+
+The real browser smoke test uses Playwright and a locally installed Chrome or Edge browser. Start the local server first, then install Playwright in your environment and run:
+
+```bash
+python -m http.server 4321
+npm install --save-dev playwright
+node tests/extension-browser-smoke.js
+```
+
+The smoke test loads the unpacked extension, captures the fixture page, picks the fixture button, opens the Builder, waits for the import acknowledgement, and verifies that the inventory is populated.
+
 For behavior checks, serve the directory with Python's standard server and use a browser:
 
 ```bash
 python -m http.server 4173
 ```
 
-Then open `http://127.0.0.1:4173/`, load the sample, test custom XPath/CSS, switch frameworks, save and reload a project, compare a second snapshot, and inspect the Console and Network panels. Browser-level behavior remains a manual check because this static project has no test runner or DOM dependency.
+Then open `http://127.0.0.1:4173/`, load the sample, test custom XPath/CSS, switch frameworks, save and reload a project, compare a second snapshot, and inspect the Console and Network panels. The main app still has no bundled browser test dependency; the extension flow has the optional Playwright smoke test above.
